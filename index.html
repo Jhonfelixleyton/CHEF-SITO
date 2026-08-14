@@ -10,7 +10,6 @@
 <body>
 
   <div class="app-container">
-    <!-- Encabezado de la App -->
     <header class="chef-header">
       <div class="avatar-container">
         <img id="chef-avatar" src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="Chef-sito Avatar">
@@ -19,11 +18,11 @@
       <p id="chef-status">¡Tu asistente interactivo de cocina!</p>
     </header>
 
-    <!-- Buscador y Selector de Recetas -->
+    <!-- Selector de Recetas -->
     <section id="recipe-selector" class="card">
       <h2>¿Qué vamos a cocinar hoy?</h2>
       
-      <input type="text" id="search-input" placeholder="🔍 Buscar receta por nombre..." onkeyup="filterRecipes()">
+      <input type="text" id="search-input" placeholder="🔍 Buscar receta..." onkeyup="filterRecipes()">
       
       <select id="recipe-dropdown">
         <option value="">-- Elige una receta --</option>
@@ -33,16 +32,17 @@
       
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
       
-      <!-- Sección para Escanear / Subir Fotos de Recetas -->
+      <!-- Sección de Foto -->
       <h3>📸 Escanear receta nueva</h3>
-      <p style="font-size: 13px; color: #666; margin-top: 5px;">Sube una foto de una receta y Chef-sito la aprenderá:</p>
-
       <input type="file" id="recipe-file-input" accept="image/*" capture="environment" style="margin-top: 10px;">
       <button onclick="processUploadedRecipe()" style="background-color: #4A5568; margin-top: 10px;">🤖 Analizar Foto con Chef-sito</button>
+      
+      <button onclick="resetApiKey()" style="background-color: #a0aec0; margin-top: 5px; font-size: 12px; padding: 6px;">🔑 Cambiar / Reingresar API Key</button>
+      
       <p id="upload-status" style="font-size: 14px; margin-top: 10px; font-weight: bold; color: #4A5568;"></p>
     </section>
 
-    <!-- Panel de Pasos Guiados -->
+    <!-- Panel de Pasos -->
     <section id="cooking-panel" class="card hidden">
       <h2 id="recipe-title">Receta</h2>
       <div class="step-box">

@@ -1,4 +1,3 @@
-// Base de datos de recetas iniciales
 const defaultRecipes = [
   {
     id: "pancakes",
@@ -27,7 +26,6 @@ const defaultRecipes = [
 let currentRecipe = null;
 let currentStepIndex = 0;
 
-// Obtener todas las recetas (Por defecto + Creadas mediante fotos)
 function getAllRecipes() {
   const customRecipes = JSON.parse(localStorage.getItem('chef_sito_recipes')) || [];
   return [...defaultRecipes, ...customRecipes];
@@ -50,7 +48,6 @@ function loadRecipeDropdown(recipesToDisplay = getAllRecipes()) {
   });
 }
 
-// Filtro en tiempo real
 function filterRecipes() {
   const searchInput = document.getElementById('search-input');
   if (!searchInput) return;
@@ -61,7 +58,6 @@ function filterRecipes() {
   loadRecipeDropdown(filtered);
 }
 
-// Lector de Voz por Sintetizador
 function speak(text) {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -131,7 +127,12 @@ function resetCooking() {
   document.getElementById('recipe-selector').classList.remove('hidden');
 }
 
-    // --- 📸 PROCESADOR DE IMÁGENES CON INTELIGENCIA ARTIFICIAL ---
+function resetApiKey() {
+  localStorage.removeItem('chef_sito_api_key');
+  alert("🔑 API Key borrada. Al presionar 'Analizar Foto' se te pedirá ingresar tu clave nuevamente.");
+}
+
+// --- 📸 ANALIZADOR DE FOTOS CON GEMINI IA ---
 async function processUploadedRecipe() {
   const fileInput = document.getElementById('recipe-file-input');
   const status = document.getElementById('upload-status');
@@ -141,7 +142,6 @@ async function processUploadedRecipe() {
     return;
   }
 
-  // Pedir API Key si no existe
   let API_KEY = localStorage.getItem('chef_sito_api_key');
 
   if (!API_KEY) {
@@ -165,12 +165,10 @@ async function processUploadedRecipe() {
   reader.onloadend = async () => {
     try {
       const base64Data = reader.result.split(',')[1];
-      const promptText = "Analiza esta foto de una receta de cocina. Extrae el título y los pasos de preparación. Responde ÚNICAMENTE un JSON válido con este formato exacto sin markdown: {\"id\": \"receta-123\", \"title\": \"🍕 Nombre\", \"steps\": [\"paso 1\", \"paso 2\"]}";
+      const promptText = "Analiza esta foto de una receta. Extrae el título y los pasos de preparación. Responde ÚNICAMENTE un JSON válido con este formato exacto: {\"id\": \"receta-123\", \"title\": \"🍕 Nombre\", \"steps\": [\"paso 1\", \"paso 2\"]}";
 
-      // URL actualizada usando el endpoint v1beta con gemini-2.5-flash
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-
-      const response = await fetch(apiUrl, {
+      // Probamos el endpoint estándar v1beta con gemini-1.5-flash
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -184,14 +182,17 @@ async function processUploadedRecipe() {
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Detalle del error:", errorData);
+        
         if (response.status === 400 || response.status === 403) {
-          localStorage.removeItem('chef_sito_api_key'); // Limpia clave si es inválida
-          throw new Error("Clave de API inválida. Presiona el botón de nuevo e ingresa tu clave correcta.");
+          localStorage.removeItem('chef_sito_api_key');
+          throw new Error("Clave de API no válida o rechazada. Presiona 'Analizar Foto' de nuevo y pégala con cuidado.");
         }
         if (response.status === 404) {
-          throw new Error("Modelo no encontrado (404). Revisa que la API Key esté activa en Google AI Studio.");
+          throw new Error("Endpoint no encontrado. Revisa tu conexión o la clave ingresada.");
         }
-        throw new Error(`Error del servidor (${response.status})`);
+        throw new Error(`Error ${response.status}: ${errorData.error?.message || "Fallo de conexión"}`);
       }
 
       const data = await response.json();
@@ -202,7 +203,6 @@ async function processUploadedRecipe() {
 
       newRecipe.id = `custom-${Date.now()}`;
 
-      // Guardar en la memoria del celular/navegador
       const customRecipes = JSON.parse(localStorage.getItem('chef_sito_recipes')) || [];
       customRecipes.push(newRecipe);
       localStorage.setItem('chef_sito_recipes', JSON.stringify(customRecipes));
@@ -216,7 +216,7 @@ async function processUploadedRecipe() {
     } catch (error) {
       console.error(error);
       status.style.color = "#E53E3E";
-      status.textContent = `❌ ${error.message || "Error al procesar la foto."}`;
+      status.textContent = `❌ ${error.message}`;
     }
   };
 
