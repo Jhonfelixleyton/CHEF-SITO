@@ -130,7 +130,6 @@ function resetCooking() {
   document.getElementById('cooking-panel').classList.add('hidden');
   document.getElementById('recipe-selector').classList.remove('hidden');
 }
-
 // --- 📸 PROCESADOR DE IMÁGENES CON INTELIGENCIA ARTIFICIAL ---
 async function processUploadedRecipe() {
   const fileInput = document.getElementById('recipe-file-input');
@@ -141,7 +140,6 @@ async function processUploadedRecipe() {
     return;
   }
 
-  // Solicitar clave de API de forma segura la primera vez
   let API_KEY = localStorage.getItem('chef_sito_api_key');
 
   if (!API_KEY) {
@@ -166,6 +164,7 @@ async function processUploadedRecipe() {
       const base64Data = reader.result.split(',')[1];
       const promptText = "Analiza esta foto de una receta de cocina. Extrae el título y los pasos de preparación. Responde ÚNICAMENTE un JSON válido con este formato exacto sin markdown: {\"id\": \"receta-123\", \"title\": \"🍕 Nombre\", \"steps\": [\"paso 1\", \"paso 2\"]}";
 
+      // URL de la API actualizada a Gemini 1.5 Flash
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -182,9 +181,12 @@ async function processUploadedRecipe() {
       if (!response.ok) {
         if (response.status === 400 || response.status === 403) {
           localStorage.removeItem('chef_sito_api_key');
-          throw new Error("API Key inválida. Se ha reiniciado, intenta de nuevo.");
+          throw new Error("API Key inválida. Se ha borrado la clave antigua, intenta de nuevo.");
         }
-        throw new Error(`Error en la solicitud (${response.status})`);
+        if (response.status === 404) {
+          throw new Error("Error 404: Ruta de la API no encontrada. Revisa tu conexión.");
+        }
+        throw new Error(`Error en el servidor (${response.status})`);
       }
 
       const data = await response.json();
