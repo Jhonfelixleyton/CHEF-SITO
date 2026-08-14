@@ -1,0 +1,95 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f0f4f8;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+.avatar-container img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  padding: 8px;
+  animation: bounce 2s infinite ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.card {
+  background: #fafafa;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  margin-top: 15px;
+}
+
+input[type="text"], input[type="file"], select, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+button {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #ff5252;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.step-box {
+  background: #fff;
+  border-left: 5px solid #ff6b6b;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: left;
+}
+
+#step-number {
+  font-weight: bold;
+  color: #ff6b6b;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.hidden {
+  display: none;
+}
+
+.reset-btn {
+  background-color: #718096;
+}
