@@ -130,7 +130,8 @@ function resetCooking() {
   document.getElementById('cooking-panel').classList.add('hidden');
   document.getElementById('recipe-selector').classList.remove('hidden');
 }
-// --- 📸 PROCESADOR DE IMÁGENES CON INTELIGENCIA ARTIFICIAL ---
+
+    // --- 📸 PROCESADOR DE IMÁGENES CON INTELIGENCIA ARTIFICIAL ---
 async function processUploadedRecipe() {
   const fileInput = document.getElementById('recipe-file-input');
   const status = document.getElementById('upload-status');
@@ -140,12 +141,14 @@ async function processUploadedRecipe() {
     return;
   }
 
+  // Pedir API Key si no existe
   let API_KEY = localStorage.getItem('chef_sito_api_key');
 
   if (!API_KEY) {
     API_KEY = prompt("Ingresa tu API Key de Google AI Studio:");
     if (API_KEY) {
-      localStorage.setItem('chef_sito_api_key', API_KEY.trim());
+      API_KEY = API_KEY.trim();
+      localStorage.setItem('chef_sito_api_key', API_KEY);
     } else {
       status.style.color = "#E53E3E";
       status.textContent = "❌ Se requiere una API Key para analizar la foto.";
@@ -164,8 +167,10 @@ async function processUploadedRecipe() {
       const base64Data = reader.result.split(',')[1];
       const promptText = "Analiza esta foto de una receta de cocina. Extrae el título y los pasos de preparación. Responde ÚNICAMENTE un JSON válido con este formato exacto sin markdown: {\"id\": \"receta-123\", \"title\": \"🍕 Nombre\", \"steps\": [\"paso 1\", \"paso 2\"]}";
 
-      // URL de la API actualizada a Gemini 1.5 Flash
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      // URL actualizada usando el endpoint v1beta con gemini-2.5-flash
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -180,13 +185,13 @@ async function processUploadedRecipe() {
 
       if (!response.ok) {
         if (response.status === 400 || response.status === 403) {
-          localStorage.removeItem('chef_sito_api_key');
-          throw new Error("API Key inválida. Se ha borrado la clave antigua, intenta de nuevo.");
+          localStorage.removeItem('chef_sito_api_key'); // Limpia clave si es inválida
+          throw new Error("Clave de API inválida. Presiona el botón de nuevo e ingresa tu clave correcta.");
         }
         if (response.status === 404) {
-          throw new Error("Error 404: Ruta de la API no encontrada. Revisa tu conexión.");
+          throw new Error("Modelo no encontrado (404). Revisa que la API Key esté activa en Google AI Studio.");
         }
-        throw new Error(`Error en el servidor (${response.status})`);
+        throw new Error(`Error del servidor (${response.status})`);
       }
 
       const data = await response.json();
@@ -197,6 +202,7 @@ async function processUploadedRecipe() {
 
       newRecipe.id = `custom-${Date.now()}`;
 
+      // Guardar en la memoria del celular/navegador
       const customRecipes = JSON.parse(localStorage.getItem('chef_sito_recipes')) || [];
       customRecipes.push(newRecipe);
       localStorage.setItem('chef_sito_recipes', JSON.stringify(customRecipes));
